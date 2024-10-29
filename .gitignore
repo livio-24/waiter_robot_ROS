@@ -1,0 +1,8 @@
+# ROS build and development folders
+build/
+devel/
+install/
+
+# ROS log files
+log/
+
