@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+'''
 import rospy
 from std_srvs.srv import order, orderResponse
 from std_msgs.msg import String
@@ -67,3 +67,6 @@ def waiter_node():
 
 if __name__ == "__main__":
     waiter_node()
+
+
+'''

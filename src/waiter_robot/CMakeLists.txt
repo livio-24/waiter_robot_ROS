@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,7 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   order_status.msg
+   order_msg.msg
 #   Message2.msg
  )
 
@@ -109,7 +110,7 @@ add_service_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES waiter_robot
-#  CATKIN_DEPENDS geometry_msgs move_base nav_msgs rospy sensor_msgs std_msgs tf
+   CATKIN_DEPENDS geometry_msgs move_base nav_msgs rospy sensor_msgs std_msgs tf message_runtime
 #  DEPENDS system_lib
 )
 
