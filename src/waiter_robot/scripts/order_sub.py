@@ -16,16 +16,18 @@ def ordine_callback(msg):
     global raccolta_in_corso, in_consegna, ordini_in_attesa, ordini_in_coda
 
     # Crea un nuovo ordine
-    ordine = {"table_id": msg.table_id, "order_details": msg.order_details}
+    ordine = {"table_id": msg.table_id, 
+              "items": msg.items,
+              "quantities": msg.quantities}
 
     if in_consegna:
         # Se il robot è già in consegna, accoda il nuovo ordine
         ordini_in_coda.append(ordine)
-        rospy.loginfo(f"Ordine ricevuto durante la consegna. Accodato per il tavolo {ordine['table_id']}: {ordine['order_details']}")
+        rospy.loginfo(f"Ordine ricevuto durante la consegna. Accodato per il tavolo {ordine['table_id']}: {list(zip(ordine['items'], ordine['quantities']))}")
     else:
         # Se il robot è in fase di raccolta, aggiungi l'ordine alla lista principale
         ordini_in_attesa.append(ordine)
-        rospy.loginfo(f"Ricevuto ordine per il tavolo {ordine['table_id']}: {ordine['order_details']}")
+        rospy.loginfo(f"Ricevuto ordine per il tavolo {ordine['table_id']}: {list(zip(ordine['items'], ordine['quantities']))}")
 
         # Avvia la fase di raccolta se non è già in corso
         if not raccolta_in_corso:
@@ -56,13 +58,14 @@ def consegna(event):
     # Cicla su ogni ordine in attesa e invia il robot al tavolo appropriato
     while ordini_in_attesa:
         ordine = ordini_in_attesa.pop(0)  # Estrai il primo ordine dalla lista
-        table_id = ordine["table_id"]
-        order_details = ordine["order_details"]
+        #table_id = ordine["table_id"]
+        #items =  ordine['items']
+        #qnt =  ordine['quantities']
 
         # Naviga al tavolo per consegnare l'ordine
-        rospy.loginfo(f"Navigo verso il tavolo {table_id} per consegnare: {order_details}")
-        send_goal(table_id)
-        rospy.loginfo(f"Ordine consegnato al tavolo {table_id}.")
+        rospy.loginfo(f"Navigo verso il tavolo {ordine['table_id']} per consegnare: {list(zip(ordine['items'], ordine['quantities']))}")
+        send_goal(ordine["table_id"])
+        rospy.loginfo(f"Ordine consegnato al tavolo {ordine['table_id']}.")
 
     # Dopo aver consegnato tutti gli ordini, torna allo stato di attesa
     in_consegna = False

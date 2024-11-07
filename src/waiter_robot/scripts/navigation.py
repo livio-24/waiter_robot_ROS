@@ -27,7 +27,7 @@ def send_goal(goal_pos):
     # Invia il goal e aspetta che venga raggiunto
     rospy.loginfo(f"Inviando goal: ({goal_pos})")
     client.send_goal(goal)
-    client.wait_for_result()
+    return client.wait_for_result()
 
     if client.get_result():
         rospy.loginfo("Goal raggiunto con successo!")

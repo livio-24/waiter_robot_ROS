@@ -1,5 +1,0 @@
-string drink_name
-string table_id
----
-bool accepted
-string message
