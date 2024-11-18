@@ -1,11 +1,12 @@
 <launch>
-  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="x_pos" default="0.0"/>
-  <arg name="y_pos" default="0.0"/>
+  <!-- <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="x_pos" default="2.0"/>
+  <arg name="y_pos" default="7.0"/>
   <arg name="z_pos" default="0.0"/>
+  -->
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find waiter_robot)/worlds/cafe.world"/>
+    <arg name="world_name" value="$(find waiter_robot)/worlds/new_cafe.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -13,7 +14,22 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+  <!-- coverting xacro to urdf -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find waiter_robot)/urdf/bot.urdf.xacro" />
 
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
+    <param name="use_gui" value="False"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+  </node>
+
+  <!-- spawn node  -->   
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"  output="screen" 
+    args= "-param robot_description -urdf -model bot -x -7.19 -y -1 -z 10 -R 0 -P 0 -Y -0.05">
+  </node>
+
+  <!-- <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description " /> -->
+  <!-- teleop node  --> 
+  <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop" />
 </launch>
