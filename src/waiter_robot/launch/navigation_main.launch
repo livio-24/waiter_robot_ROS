@@ -1,0 +1,10 @@
+<launch>
+    <!-- Run gazebo simulation and spawn the robot, plus teleop node -->
+    <include file = "$(find waiter_robot)/launch/cafe_world.launch" />
+    <!-- LOCALIZATION: run amcl node. Include map-server node to load the map generated during mapping step-->
+    <include file = "$(find waiter_robot)/launch/amcl_plus_map_server.launch" />
+    <!-- PATH PLANNING: make plans and move the robot -->
+    <include file = "$(find waiter_robot)/launch/move_base.launch" />
+
+
+</launch>
