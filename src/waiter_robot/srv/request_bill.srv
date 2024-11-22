@@ -1,0 +1,6 @@
+string table_id
+---
+bool success
+float64 total
+menu_item[] items
+string message

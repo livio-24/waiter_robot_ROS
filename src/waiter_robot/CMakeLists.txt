@@ -55,13 +55,15 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    order_msg.msg
+   menu_item.msg
+
 #   Message2.msg
  )
 
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   menu.srv
+   request_bill.srv
 #   Service2.srv
  )
 
