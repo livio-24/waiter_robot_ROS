@@ -7,11 +7,14 @@ def order_callback(msg):
     orders = rospy.get_param('/orders', {})
     rospy.loginfo(orders)
     # Prepara l'ordine per il tavolo specifico
+    if msg.table_id == 'delivery':
+        return
+    
     if msg.table_id not in orders:
         orders[msg.table_id] = []
     
     for item in msg.items:
-        orders[msg.table_id].append({"nome": item.nome, "prezzo": item.prezzo})
+        orders[msg.table_id].append({"name": item.name, "price": item.price})
     
     # Salva gli ordini aggiornati nel parameter server
     rospy.set_param('/orders', orders)

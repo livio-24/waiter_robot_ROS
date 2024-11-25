@@ -1,3 +1,2 @@
-string nome
-float32 prezzo
-string ingredienti
+string name
+float32 price

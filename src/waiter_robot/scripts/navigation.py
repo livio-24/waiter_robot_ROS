@@ -10,7 +10,7 @@ def send_goal(goal_pos):
     #rospy.init_node("send_goal_node", anonymous=True)
 
     # Recupera la posizione del tavolo dal server dei parametri
-    table_position = rospy.get_param(goal_pos, None)
+    position = rospy.get_param(goal_pos, None)
 
     # Crea un client per il server "move_base"
     client = actionlib.SimpleActionClient("move_base", MoveBaseAction)
@@ -20,12 +20,12 @@ def send_goal(goal_pos):
     goal = MoveBaseGoal()
     goal.target_pose.header.frame_id = "map"
     goal.target_pose.header.stamp = rospy.Time.now()
-    goal.target_pose.pose.position.x = table_position['x']
-    goal.target_pose.pose.position.y = table_position['y']
-    goal.target_pose.pose.orientation.w = table_position['z']
+    goal.target_pose.pose.position.x = position['x']
+    goal.target_pose.pose.position.y = position['y']
+    goal.target_pose.pose.orientation.w = position['z']
 
     # Invia il goal e aspetta che venga raggiunto
-    rospy.loginfo(f"Inviando goal: ({goal_pos})")
+    #rospy.loginfo(f"Inviando goal: ({goal_pos})")
     client.send_goal(goal)
     return client.wait_for_result()
 
@@ -40,6 +40,6 @@ def send_goal(goal_pos):
 if __name__ == "__main__":
     try:
         # Esempio di goal da inviare
-        send_goal('bancone')
+        send_goal('kitchen')
     except rospy.ROSInterruptException:
         pass

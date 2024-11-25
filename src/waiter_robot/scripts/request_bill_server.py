@@ -5,10 +5,10 @@ from waiter_robot.msg import menu_item
 
 
 def handle_request_bill(req):
-    # Recupera gli ordini dal parameter server
+    # Get orders from parameter server
     orders = rospy.get_param('/orders', {})
 
-    # Verifica se il tavolo esiste
+    # check if table exists in active orders
     if req.table_id not in orders:
         return request_billResponse(
             success=False,
@@ -17,37 +17,32 @@ def handle_request_bill(req):
             message="Tavolo non trovato."
         )
     
-    # Recupera gli articoli dell'ordine
     table_orders = orders[req.table_id]
-    total = 0.0
+    total = 2.0 #coperto
     items_list = []
 
-    # Calcola il totale
+    # Calculate the total
     for item_data in table_orders:
         item = menu_item()
-        item.nome = item_data['nome']
-        item.prezzo = item_data['prezzo']
+        item.name = item_data['name']
+        item.price = item_data['price']
         items_list.append(item)
-        total += item.prezzo
+        total += item.price
 
-    del orders[req.table_id]  # Rimuove il tavolo e i relativi ordini
+    del orders[req.table_id]  # remove table and relative orders from server
     rospy.set_param('/orders', orders) 
-    # Ritorna la risposta
+    #send response
     return request_billResponse(
         success=True,
         total=total,
         items=items_list,
-        message="Conto calcolato con successo."
+        message="Thanks for coming."
     )
 
 def bill_server():
     rospy.init_node('bill_service_server')
-    
-    # Inizializza il servizio
     rospy.Service('/request_bill', request_bill, handle_request_bill)
-    
     rospy.loginfo("Bill service is ready.")
-    
     rospy.spin()
 
 if __name__ == "__main__":

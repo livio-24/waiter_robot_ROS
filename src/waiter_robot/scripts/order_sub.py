@@ -4,90 +4,57 @@ import rospy
 from waiter_robot.msg import order_msg
 from navigation import send_goal
 
-# Variabili globali
-ordini_in_attesa = []
-ordini_in_coda = []  # Nuova lista per accodare ordini durante la consegna
-raccolta_in_corso = False
-in_consegna = False
-timer_raccolta = None
-RACCOLTA_ORDINI_TEMPO = 10  # Durata fase di raccolta ordini
+orders = []
 
-def ordine_callback(msg):
-    global raccolta_in_corso, in_consegna, ordini_in_attesa, ordini_in_coda
 
-    # Crea un nuovo ordine
-    ordine = {"table_id": msg.table_id, 
+def order_callback(msg):
+    global orders
+
+    if(msg.table_id == 'delivery'):
+        #check if orders not empty
+        if(orders):
+            deliver()
+            return
+        
+        else:
+            return
+    
+    # Create a new order
+    order = {"table_id": msg.table_id, 
               "items": msg.items
             }
 
-    if in_consegna:
-        # Se il robot è già in consegna, accoda il nuovo ordine
-        ordini_in_coda.append(ordine)
-        rospy.loginfo(f"Ordine ricevuto durante la consegna. Accodato per il tavolo {ordine['table_id']}: {ordine['items']}")
-    else:
-        # Se il robot è in fase di raccolta, aggiungi l'ordine alla lista principale
-        ordini_in_attesa.append(ordine)
-        rospy.loginfo(f"Ricevuto ordine per il tavolo {ordine['table_id']}: {ordine['items']}")
+    orders.append(order)
+    rospy.loginfo(f"Riceived order from {order['table_id']}: {order['items']}")
 
-        # Avvia la fase di raccolta se non è già in corso
-        if not raccolta_in_corso:
-            avvia_fase_raccolta()
+def deliver():
+    global orders
 
-def avvia_fase_raccolta():
-    global raccolta_in_corso, timer_raccolta
-    raccolta_in_corso = True
-    rospy.loginfo("Iniziata fase di raccolta ordini per 30 secondi.")
-    timer_raccolta = rospy.Timer(rospy.Duration(RACCOLTA_ORDINI_TEMPO), consegna, oneshot=True)
+    rospy.loginfo("Navigating to kitchen.")
+    send_goal('kitchen')  # GO kitchen
 
-def consegna(event):
-    global raccolta_in_corso, in_consegna, ordini_in_attesa, ordini_in_coda
+    # Send robot to each table in the order list
+    while orders:
+        order = orders.pop(0)  # take first order in the list
+        rospy.loginfo(f"going to table {order['table_id']} to deliver: {order['items']}")
+        send_goal(order["table_id"])
+        rospy.loginfo(f"order deliverd to {order['table_id']}.")
 
-    # Termina la fase di raccolta e passa alla fase di consegna
-    raccolta_in_corso = False
-    in_consegna = True
-    rospy.loginfo("Fase di raccolta terminata. Inizio della consegna degli ordini.")
+    orders = []
+ 
 
-    # Unisci gli ordini in attesa con quelli accodati durante la consegna
-    ordini_in_attesa.extend(ordini_in_coda)
-    ordini_in_coda.clear()  # Svuota la coda temporanea
 
-    # Naviga al bancone per raccogliere gli ordini
-    rospy.loginfo("Navigazione al bancone.")
-    send_goal('kitchen')  # Naviga al bancone
-
-    # Cicla su ogni ordine in attesa e invia il robot al tavolo appropriato
-    while ordini_in_attesa:
-        ordine = ordini_in_attesa.pop(0)  # Estrai il primo ordine dalla lista
-        #table_id = ordine["table_id"]
-        #items =  ordine['items']
-        #qnt =  ordine['quantities']
-
-        # Naviga al tavolo per consegnare l'ordine
-        rospy.loginfo(f"Navigo verso il tavolo {ordine['table_id']} per consegnare: {ordine['items']}")
-        send_goal(ordine["table_id"])
-        rospy.loginfo(f"Ordine consegnato al tavolo {ordine['table_id']}.")
-
-    # Dopo aver consegnato tutti gli ordini, torna allo stato di attesa
-    in_consegna = False
-    rospy.loginfo("Tutti gli ordini sono stati consegnati.")
-    rospy.sleep(1)
-    # Se ci sono ordini in coda, riavvia una nuova fase di raccolta
-    if ordini_in_coda:
-        rospy.loginfo("Ci sono ordini accodati. Avvio una nuova fase di raccolta.")
-        avvia_fase_raccolta()
-
-def ordine_subscriber():
-    # Inizializza il nodo
+def order_subscriber():
+    # Init node
     rospy.init_node('ordine_subscriber', anonymous=True)
 
-    # Crea il subscriber per il topic degli ordini
-    rospy.Subscriber('order_topic', order_msg, ordine_callback)
+    # Create sub 
+    rospy.Subscriber('order_topic', order_msg, order_callback)
 
-    # Mantiene il nodo in esecuzione
     rospy.spin()
 
 if __name__ == '__main__':
     try:
-        ordine_subscriber()
+        order_subscriber()
     except rospy.ROSInterruptException as e:
         rospy.logerr(f"Eccezione ROS: {e}")
