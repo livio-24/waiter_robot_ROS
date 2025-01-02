@@ -5,11 +5,6 @@
     <include file = "$(find waiter_robot)/launch/amcl_plus_map_server.launch" />
     <!-- PATH PLANNING: make plans and move the robot -->
     <include file = "$(find waiter_robot)/launch/move_base.launch" />
-
-    <!-- Avvia RViz -->
+    <!-- start RViz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find waiter_robot)/rviz/rviz_config.rviz" output="screen" />
-    
 </launch>
-
-
-

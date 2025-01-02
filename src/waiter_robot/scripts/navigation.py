@@ -4,11 +4,9 @@ import rospy
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import actionlib
 import sys
+from geometry_msgs.msg import Point
 
 def send_goal(goal_pos):
-    # Inizializza un nodo
-    #rospy.init_node("send_goal_node", anonymous=True)
-
     # Recupera la posizione del tavolo dal server dei parametri
     position = rospy.get_param(goal_pos, None)
 
@@ -20,10 +18,11 @@ def send_goal(goal_pos):
     goal = MoveBaseGoal()
     goal.target_pose.header.frame_id = "map"
     goal.target_pose.header.stamp = rospy.Time.now()
-    goal.target_pose.pose.position.x = position['x']
-    goal.target_pose.pose.position.y = position['y']
-    goal.target_pose.pose.orientation.w = position['z']
-
+    goal.target_pose.pose.position = Point(position['x'],position['y'],0.05)
+    goal.target_pose.pose.orientation.x=position['ox']
+    goal.target_pose.pose.orientation.y=position['oy']
+    goal.target_pose.pose.orientation.z=position['oz']
+    goal.target_pose.pose.orientation.w=position['ow']
     # Invia il goal e aspetta che venga raggiunto
     #rospy.loginfo(f"Inviando goal: ({goal_pos})")
     client.send_goal(goal)

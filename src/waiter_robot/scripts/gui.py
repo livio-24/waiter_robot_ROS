@@ -4,9 +4,10 @@ import csv
 import tkinter as tk
 from tkinter import ttk, messagebox
 import rospy
-from order_pub import publish_order
+#from order_pub import publish_order
 from waiter_robot.srv import request_bill, request_billResponse
-from waiter_robot.msg import order_msg
+from waiter_robot.msg import order_msg, menu_item
+
 from ttkthemes import ThemedTk
 
 
@@ -20,10 +21,6 @@ def load_menu_from_csv(file_path):
         for row in reader:
             menu.append({"name": row["Nome"], "price": float(row["Prezzo"])})
     return menu
-
-def start_delivery():
-    publish_order('delivery', [])
-
 
 # menu selection
 def show_menu(table):
@@ -87,8 +84,6 @@ def calculate_bill(table):
             messagebox.showerror("Error", response.message)
     except rospy.ServiceException as e:
         messagebox.showerror("Error", f"Service not available: {e}")
-
-
 
 def show_active_orders_window():
     # Finestra per visualizzare gli ordini attivi
@@ -164,32 +159,49 @@ def show_active_orders_window():
     # Avviare il primo aggiornamento
     update_orders()
 
+def publish_order(table_id, menu_items):
 
-rospy.init_node('gui_node', anonymous=True)
-# Finestra principale
-root = ThemedTk(theme="breeze")
-root.title("Robot Waiter")
+    # Create pub
+    pub = rospy.Publisher('/order_topic', order_msg, queue_size=10)
+    rospy.sleep(1)
 
-# Stile per i pulsanti
-style = ttk.Style()
-style.configure("TButton", font=("Arial", 12), padding=5)
+    ordermsg = order_msg()
+    ordermsg.table_id = table_id
+    ordermsg.items = [menu_item(name=item['name'], price=item['price']) for item in menu_items]
 
-# Layout a griglia per i pulsanti dei tavoli
-frame = ttk.Frame(root, padding=20)
-frame.pack(expand=True, fill="both")
+    rospy.loginfo(f"Publishing order for {ordermsg.table_id}: {menu_items}")
+    
+    pub.publish(ordermsg)
 
-table_buttons = {}
+def init_gui():
+    rospy.init_node('gui_node', anonymous=True)
+    # Finestra principale
+    root = ThemedTk(theme="breeze")
+    root.title("Robot Waiter")
 
-for i in range(4):
-    for j in range(2):
-        table_id = f"table_{i * 2 + j + 1}"
-        btn = ttk.Button(frame, text=f"{table_id}", width=20, command=lambda t=table_id: show_menu(t))
-        btn.grid(row=i, column=j, padx=10, pady=10)
-        table_buttons[table_id] = btn
+    # Stile per i pulsanti
+    style = ttk.Style()
+    style.configure("TButton", font=("Arial", 12), padding=5)
+
+    # Layout a griglia per i pulsanti dei tavoli
+    frame = ttk.Frame(root, padding=20)
+    frame.pack(expand=True, fill="both")
+
+    table_buttons = {}
+
+    for i in range(4):
+        for j in range(2):
+            table_id = f"table_{i * 2 + j + 1}"
+            btn = ttk.Button(frame, text=f"{table_id}", width=20, command=lambda t=table_id: show_menu(t))
+            btn.grid(row=i, column=j, padx=10, pady=10)
+            table_buttons[table_id] = btn
 
 
-ttk.Button(root, text="Start delivery", command=start_delivery).pack(pady=10)
-ttk.Button(root, text="Show Active Orders", command=show_active_orders_window).pack(pady=10)
+    ttk.Button(root, text="Start delivery", command=lambda: publish_order('delivery', [])).pack(pady=10)
+    ttk.Button(root, text="Show Active Orders", command=show_active_orders_window).pack(pady=10)
 
 
-root.mainloop()
+    root.mainloop()
+
+if __name__ == '__main__':
+    init_gui()

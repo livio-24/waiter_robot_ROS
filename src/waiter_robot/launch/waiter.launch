@@ -3,7 +3,7 @@
     <rosparam file="$(find waiter_robot)/config/positions.yaml" command="load" />
 
     <node name="order_sub" pkg="waiter_robot" type="order_sub.py" output="screen" />
-    <node name="order_pub" pkg="waiter_robot" type="order_pub.py" output="screen"/>
+    <!--<node name="order_pub" pkg="waiter_robot" type="order_pub.py" output="screen"/>-->
     <node name="orders_manager" pkg="waiter_robot" type="orders_manager.py" output="screen"/>
     <node name="request_bill_server" pkg="waiter_robot" type="request_bill_server.py" output="screen"/>
     <node name="gui" pkg="waiter_robot" type="gui.py" output="screen"/>
